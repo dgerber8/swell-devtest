@@ -7,12 +7,9 @@ export class ReviewsController {
 	constructor(private reviewsService: ReviewsService) {}
 
 	@Get('/')
-	async getReviews(): Promise<string> {
+	async getReviews(): Promise<ReviewsResponse> {
 		const reviews = await this.reviewsService.getReviews();
-		const testCompany = { id: 1, name: 'comp1' };
-		const testUser = { id: 1, firstName: 'fn', lastName: 'ln', email: 'rub@dub.dub' };
-		const testResp = [{ company: testCompany, user: testUser }];
-		return JSON.stringify(testResp);
+		return { reviews };
 	}
 
 	@Get('/count')

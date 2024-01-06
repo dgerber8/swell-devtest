@@ -6,7 +6,17 @@ export class ReviewsService {
 	constructor(private prisma: DatabaseService) {}
 
 	getReviews() {
-		return this.prisma.review.findMany();
+		return this.prisma.review.findMany({
+			orderBy: [
+				{
+					createdOn: 'desc',
+				},
+			],
+			include: {
+				user: true,
+				company: true,
+			},
+		});
 	}
 
 	getReviewsCount() {
