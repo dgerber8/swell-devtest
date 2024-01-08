@@ -6,11 +6,16 @@ import { DatabaseService } from '../database/database.service';
 import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
 
+const containsAllFields = (obj, fields) => fields.every((field) => obj.hasOwnProperty(field));
+
 describe('ReviewsController', () => {
 	const user1Id = 'user-1';
 	const user2Id = 'user-2';
 	const company1Id = 'company-1';
 	const company2Id = 'company-2';
+	const reviewIds = ['1', '2', '3'];
+	const userFields = ['firstName', 'lastName', 'email'];
+	const companyFields = ['name'];
 
 	let app: INestApplication;
 	let prisma: DatabaseService;
@@ -41,26 +46,26 @@ describe('ReviewsController', () => {
 			}),
 			prisma.review.create({
 				data: {
-					id: '1',
+					id: reviewIds[0],
 					reviewerId: user1Id,
 					companyId: company1Id,
-					createdOn: '2020-01-01T00:00:00.000Z',
+					createdOn: '2020-01-03T00:00:00.000Z',
 				},
 			}),
 			prisma.review.create({
 				data: {
-					id: '3',
+					id: reviewIds[1],
 					reviewerId: user2Id,
 					companyId: company1Id,
-					createdOn: '2022-01-01T00:00:00.000Z',
+					createdOn: '2022-01-02T00:00:00.000Z',
 				},
 			}),
 			prisma.review.create({
 				data: {
-					id: '2',
+					id: reviewIds[2],
 					reviewerId: user2Id,
 					companyId: company2Id,
-					createdOn: '2021-01-01T00:00:00.000Z',
+					createdOn: '2021-01-04T00:00:00.000Z',
 				},
 			}),
 		]);
@@ -81,14 +86,53 @@ describe('ReviewsController', () => {
 	});
 
 	describe('getReviews()', () => {
-		it.todo('should fetch all reviews');
+		it('should fetch all reviews successfully', async () => {
+			const response = await request(app.getHttpServer()).get('/reviews');
 
-		it.todo('should fetch reviews in descending order by date');
+			expect(response.status).toBe(200);
 
-		it.todo('should include user data with review');
+			const containsExpectedIds = reviewIds.every((expectedId) =>
+				response.body.reviews.some((review) => review.id === expectedId),
+			);
 
-		it.todo('should include company data with review');
+			expect(containsExpectedIds).toBe(true);
+		});
 
-		// Feel free to add any additional tests you think are necessary
+		it('should fetch reviews in descending order by createdOn date', async () => {
+			const response = await request(app.getHttpServer()).get('/reviews');
+
+			const isSortedByDateDesc = response.body.reviews.every((review, index, reviews) => {
+				if (index === 0) return true;
+
+				const currDate = new Date(review.createdOn);
+				const prevDate = new Date(reviews[index - 1].createdOn);
+
+				return currDate <= prevDate;
+			});
+
+			expect(isSortedByDateDesc).toBe(true);
+		});
+
+		it('should include user data with review', async () => {
+			const response = await request(app.getHttpServer()).get('/reviews');
+
+			const hasUserData = response.body.reviews.every((review) => {
+				if (!review.hasOwnProperty('user')) return false;
+				return containsAllFields(review.user, userFields);
+			});
+
+			expect(hasUserData).toBe(true);
+		});
+
+		it('should include company data with review', async () => {
+			const response = await request(app.getHttpServer()).get('/reviews');
+
+			const hasCompanyData = response.body.reviews.every((review) => {
+				if (!review.hasOwnProperty('company')) return false;
+				return containsAllFields(review.company, companyFields);
+			});
+
+			expect(hasCompanyData).toBe(true);
+		});
 	});
 });

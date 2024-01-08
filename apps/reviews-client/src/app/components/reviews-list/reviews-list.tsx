@@ -4,6 +4,38 @@ import React, { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import { Snackbar } from '@mui/material';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
+	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+const styles = {
+	title: {
+		fontSize: '25pt',
+		marginBottom: '10px',
+		paddingTop: '10px',
+	},
+	header: {
+		display: 'flex',
+		flex_direction: 'row',
+	},
+	card: {
+		margin: 'auto',
+		marginTop: '5px',
+	},
+	reviewerInfo: {
+		display: 'flex',
+		alignItems: 'flex-end',
+	},
+	rating: {
+		display: 'flex',
+		justifyContent: 'right',
+		flexGrow: 1,
+		marginRight: '15px',
+	},
+};
 
 /* eslint-disable-next-line */
 export interface ReviewsListProps {}
@@ -13,66 +45,62 @@ export interface ReviewData extends Review {
 	user: User;
 }
 
-const title = {
-	fontSize: '25pt',
-	marginBottom: '10px',
-	paddingTop: '10px',
-};
-const header = {
-	display: 'flex',
-	flex_direction: 'row',
-};
-const card = {
-	margin: 'auto',
-	marginTop: '5px',
-};
-const reviewerInfo = {
-	display: 'flex',
-	alignItems: 'flex-end',
-};
-const rating = {
-	display: 'flex',
-	justifyContent: 'right',
-	flexGrow: 1,
-	marginRight: '15px',
-};
-
 export function ReviewsList(props: ReviewsListProps) {
 	const [reviews, setReviews] = useState<ReviewData[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
+	// Retrieves review data via the /reviews endpoint on page load
 	useEffect(() => {
 		fetch('api/reviews')
 			.then((response) => response.json())
 			.then((data) => {
-				console.log(data.reviews);
 				setReviews(data.reviews);
+				console.log(JSON.stringify(data.reviews));
 				setIsLoading(false);
 			})
 			.catch((err) => {
 				console.log(err.message);
+				setOpenSnackbar(true);
+				setIsLoading(false);
 			});
 	}, []);
 
+	const handleClose = () => {
+		setOpenSnackbar(false);
+	};
+
 	return (
 		<>
-			<Typography style={title} variant="h1">
+			<Snackbar
+				open={openSnackbar}
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				autoHideDuration={6000}
+				onClose={handleClose}
+			>
+				<Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+					Error retrieving review data
+				</Alert>
+			</Snackbar>
+
+			<Typography style={styles.title} variant="h1">
 				{`Reviews:`}
 			</Typography>
 			<hr></hr>
+
 			{reviews.length || isLoading ? (
 				<>
 					{reviews.map((review, index) => {
 						return (
 							<Card
-								style={card}
+								style={styles.card}
 								sx={{ backgroundColor: index % 2 ? '#e8e8e8' : 'white' }}
 								variant="outlined"
 							>
 								<CardContent>
-									<div style={header}>
+									<div style={styles.header}>
 										<div>
-											<div style={reviewerInfo}>
+											<div style={styles.reviewerInfo}>
 												<Typography sx={{ fontSize: '14pt' }} variant="h3">
 													{`${review.user.firstName} ${review.user.lastName}`}
 												</Typography>
@@ -91,7 +119,7 @@ export function ReviewsList(props: ReviewsListProps) {
 												{review.company.name}
 											</Typography>
 										</div>
-										<div style={rating}>
+										<div style={styles.rating}>
 											<Typography sx={{ color: '#e11979', fontSize: '20pt', fontWeight: 'bold' }}>
 												{review.rating}
 											</Typography>
