@@ -40,49 +40,57 @@ export function ReviewsList(props: ReviewsListProps) {
 
 	return (
 		<>
-			{reviews.map((review, index) => (
-				<Card
-					style={styles.card}
-					sx={{ backgroundColor: index % 2 ? '#e8e8e8' : 'white' }}
-					variant="outlined"
-					data-testid="review-card"
-					key={review.id}
-				>
-					<CardContent>
-						<div style={styles.header}>
-							<div>
-								<div style={styles.reviewerInfo}>
-									<Typography sx={{ fontSize: '14pt' }} variant="h3">
-										{`${review.user.firstName} ${review.user.lastName}`}
-									</Typography>
-									<Typography
-										sx={{ fontSize: '8pt', marginLeft: '5px' }}
-										color="text.secondary"
-										component="div"
-									>
-										{new Date(review.createdOn).toLocaleString('en-US', {
-											dateStyle: 'short',
-											timeStyle: 'short',
-										})}
-									</Typography>
+			{reviews.length ? (
+				<>
+					{reviews.map((review, index) => (
+						<Card
+							style={styles.card}
+							sx={{ backgroundColor: index % 2 ? '#e8e8e8' : 'white' }}
+							variant="outlined"
+							data-testid="review-card"
+							key={review.id}
+						>
+							<CardContent>
+								<div style={styles.header}>
+									<div>
+										<div style={styles.reviewerInfo}>
+											<Typography sx={{ fontSize: '14pt' }} variant="h3">
+												{`${review.user.firstName} ${review.user.lastName}`}
+											</Typography>
+											<Typography
+												sx={{ fontSize: '8pt', marginLeft: '5px' }}
+												color="text.secondary"
+												component="div"
+											>
+												{new Date(review.createdOn).toLocaleString('en-US', {
+													dateStyle: 'short',
+													timeStyle: 'short',
+												})}
+											</Typography>
+										</div>
+										<Typography sx={{ mb: review.reviewText ? 1.5 : 0 }} color="text.secondary">
+											{review.company.name}
+										</Typography>
+									</div>
+									<div style={styles.rating}>
+										<Typography sx={{ color: '#e11979', fontSize: '20pt', fontWeight: 'bold' }}>
+											{review.rating}
+										</Typography>
+										<StarIcon sx={{ color: '#e11979', fontSize: '30pt' }} />
+									</div>
 								</div>
-								<Typography sx={{ mb: review.reviewText ? 1.5 : 0 }} color="text.secondary">
-									{review.company.name}
-								</Typography>
-							</div>
-							<div style={styles.rating}>
-								<Typography sx={{ color: '#e11979', fontSize: '20pt', fontWeight: 'bold' }}>
-									{review.rating}
-								</Typography>
-								<StarIcon sx={{ color: '#e11979', fontSize: '30pt' }} />
-							</div>
-						</div>
-						<Typography variant="body1" data-testid="review-text">
-							{review.reviewText}
-						</Typography>
-					</CardContent>
-				</Card>
-			))}
+								{review.reviewText && (
+									<Typography variant="body1" data-testid="review-text">
+										{review.reviewText}
+									</Typography>
+								)}
+							</CardContent>
+						</Card>
+					))}
+				</>
+			) : (
+				<Typography sx={{ fontSize: '14pt' }}>There are currently no reviews.</Typography>
+			)}
 		</>
 	);
 }

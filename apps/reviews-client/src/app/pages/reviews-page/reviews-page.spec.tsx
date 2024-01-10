@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import ReviewsPage from './reviews-page';
 import { getReviews } from '../../utils/reviews-utils';
 
@@ -18,6 +18,7 @@ describe('ReviewsPage', () => {
 
 		const { baseElement } = render(<ReviewsPage />);
 		expect(baseElement).toBeTruthy();
+		await waitForElementToBeRemoved(() => screen.getByText('Loading review data...'));
 	});
 
 	it('should show loading message while waiting for getReviews to resolve', async () => {
@@ -31,8 +32,7 @@ describe('ReviewsPage', () => {
 		const loadingText = screen.getByText('Loading review data...');
 
 		expect(loadingText).toBeInTheDocument();
-		await delay(200);
-		expect(loadingText).not.toBeInTheDocument();
+		await waitForElementToBeRemoved(() => screen.getByText('Loading review data...'));
 	});
 
 	it('should show error message when fetch is unsuccessful', async () => {

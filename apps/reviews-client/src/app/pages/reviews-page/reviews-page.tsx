@@ -1,7 +1,3 @@
-import Container from '@mui/material/Container';
-import { ThemeProvider } from '@mui/material/styles';
-import WebFont from 'webfontloader';
-import Header from '../../components/header/header';
 import ReviewsList from '../../components/reviews-list/reviews-list';
 import React, { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
@@ -32,7 +28,6 @@ export function ReviewsPage() {
 				const reviewData = await getReviews();
 				setReviews(reviewData.reviews);
 			} catch (e: any) {
-				console.error(e);
 				setError(e);
 			}
 

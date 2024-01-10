@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import ReviewsList from './reviews-list';
 
 const testReview = {
@@ -39,35 +39,45 @@ const testReviewWithMessage = {
 };
 
 describe('ReviewsList', () => {
-	beforeEach(() => {
-		global.fetch = jest.fn();
-	});
-
 	it('should render successfully', () => {
 		const { baseElement } = render(<ReviewsList reviews={[]} />);
 		expect(baseElement).toBeTruthy();
 	});
 
-	/*
-		- return multiple reviews
-		- Check expected number of cards got rendered
-	*/
 	it('should render list of reviews', () => {
 		render(<ReviewsList reviews={[testReview, testReviewWithMessage]} />);
-		const latestStoriesH2 = screen.getAllByTestId('review-card');
-		console.log(`latestStoriesH2:\n${JSON.stringify(latestStoriesH2.length)}`);
-		expect(latestStoriesH2.length).toBe(2);
+
+		const reviewCards = screen.getAllByTestId('review-card');
+		expect(reviewCards.length).toBe(2);
+
+		expect(
+			within(reviewCards[0]).getByText(testReview.user.firstName + ' ' + testReview.user.lastName),
+		).toBeInTheDocument();
+		expect(
+			within(reviewCards[1]).getByText(
+				testReviewWithMessage.user.firstName + ' ' + testReviewWithMessage.user.lastName,
+			),
+		).toBeInTheDocument();
+
+		expect(screen.queryByText('There are currently no reviews.')).toBeNull();
 	});
 
-	/*
-		- return empty list
-		- Check no reviews message got rendered
-	*/
-	it('should display message if no reviews are found', () => {});
+	it('should display message if no reviews are found', () => {
+		render(<ReviewsList reviews={[]} />);
 
-	/*
-		- return one textless and on w/ text review
-		- Check if review text test id shows for 1 card and not the other
-	*/
-	it('should display the review text if provided', () => {});
+		const reviewCards = screen.queryByTestId('review-card');
+		expect(reviewCards).toBeNull();
+
+		expect(screen.getByText('There are currently no reviews.')).toBeInTheDocument();
+	});
+
+	it('should display the review text if provided', () => {
+		render(<ReviewsList reviews={[testReview, testReviewWithMessage]} />);
+
+		const reviewCards = screen.getAllByTestId('review-card');
+
+		expect(within(reviewCards[0]).queryByTestId('review-text')).toBeNull();
+		expect(within(reviewCards[1]).getByTestId('review-text')).toBeInTheDocument();
+		expect(within(reviewCards[1]).getByText(testReviewWithMessage.reviewText)).toBeInTheDocument();
+	});
 });
